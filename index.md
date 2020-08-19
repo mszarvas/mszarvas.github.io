@@ -5,6 +5,10 @@ Page created based on Chapter 20 of book *Deep Learning for Coders with fastai a
 
 This link generated the website template: https://github.com/fastai/fast_template/generate
 
+Which likely did only a clone of this repo: https://github.com/fastai/fast_template
+
+fastai's more serious blog platform, which permits blogging via `ipynb`, is here: https://fastpages.fast.ai/ and here: https://github.com/fastai/fastpages
+
 This file: `index.md`
 
 Can edit in-place via the pencil icon near the top right.
