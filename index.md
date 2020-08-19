@@ -14,4 +14,7 @@ Hyperlink: [link to fast.ai](https://www.fast.ai).
 
 Commit via the `Commit changes` button near the bottom of the page.
 
+## Poor Man's profiler with flamegraph:
+[github repo](https://github.com/zenkj/poormansprofiler)
+
 Posts will appear after this file. 
