@@ -7,7 +7,17 @@ This link generated the website template: https://github.com/fastai/fast_templat
 
 Which likely did only a clone of this repo: https://github.com/fastai/fast_template
 
+
+## fastpages
 fastai's more serious blog platform, which permits blogging via `ipynb`, is here: https://fastpages.fast.ai/ and here: https://github.com/fastai/fastpages
+
+fastpages supports `Altair: Declarative Visualization in Python`: https://altair-viz.github.io/index.html
+
+Site made with `fastpages`: https://drscotthawley.github.io/blog/2019/02/08/My-1st-NN-Part-3-Multi-Layer-and-Backprop.html
+
+Site above has link to launch the ipynb on Google Colab, includes math formulas, iPyNB code and output.
+
+fastpages insall method: https://fastpages.fast.ai/fastpages/jupyter/2020/02/21/introducing-fastpages.html
 
 This file: `index.md`
 
