@@ -5,8 +5,6 @@ Page created based on Chapter 20 of book *Deep Learning for Coders with fastai a
 
 This link generated the website template: https://github.com/fastai/fast_template/generate
 
-Howard, Jeremy. Deep Learning for Coders with fastai and PyTorch . O'Reilly Media. Kindle Edition. 
-
 This file: `index.md`
 
 Can edit in-place via the pencil icon near the top right.
