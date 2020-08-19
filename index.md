@@ -1,3 +1,12 @@
+## Blog URL
+[mszarvas.github.io](http://mszarvas.github.io)
+
+Page created based on Chapter 20 of book *Deep Learning for Coders with fastai and PyTorch*
+
+This link generated the website template: https://github.com/fastai/fast_template/generate
+
+Howard, Jeremy. Deep Learning for Coders with fastai and PyTorch . O'Reilly Media. Kindle Edition. 
+
 This file: `index.md`
 
 Can edit in-place via the pencil icon near the top right.
@@ -13,6 +22,9 @@ Including images:
 Hyperlink: [link to fast.ai](https://www.fast.ai).
 
 Commit via the `Commit changes` button near the bottom of the page.
+
+## Changing blog config
+Edit file [_config.yml](_config.yml)
 
 ## Poor Man's profiler with flamegraph:
 [github repo](https://github.com/zenkj/poormansprofiler)
