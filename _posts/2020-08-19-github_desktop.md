@@ -8,3 +8,4 @@ Works on Linux, Mac and Windows.
 - Select `Clone repository from internet`
 - Select `View files in Finder`
 - Can edit now locally
+
