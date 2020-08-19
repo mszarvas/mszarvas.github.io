@@ -9,6 +9,8 @@ This file: `index.md`
 
 Can edit in-place via the pencil icon near the top right.
 
+Can delete file via the garbage box icon. Must commit deletions.
+
 [Markdown documentation](https://guides.github.com/features/mastering-markdown/). 
 
 Including images:
