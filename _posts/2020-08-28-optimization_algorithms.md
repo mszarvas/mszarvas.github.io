@@ -41,3 +41,10 @@ Also has: [Save Matplotlib Animations as GIFs](http://louistiao.me/posts/noteboo
 
 [An updated overview of recent gradient descent algorithms](https://johnchenresearch.github.io/demon/): Does benchmark of optimizers
 
+[DON’T DECAY THE LEARNING RATE, INCREASE THE BATCH SIZE](https://arxiv.org/pdf/1711.00489.pdf):
+* Increased batch size has similar stabilizing effects as reduced learning rate
+* Same number of epochs
+* But less number of updates
+* Shorter training time
+* Allow to re-purpose existing training schedules for large batch size training with no hyper-parameter tuning
+
