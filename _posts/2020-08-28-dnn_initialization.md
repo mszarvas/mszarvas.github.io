@@ -14,3 +14,22 @@
 * Reports
     * Improved training stability
     * Improved results in CIFAR10, CIFAR100
+
+* [Data Dependent Initialization of Convolutional Neural Networks](https://arxiv.org/pdf/1511.06856.pdf)
+    * Guy's focus is not just init but good transfer learning
+    * Lots of test data
+    * Might be doing similar things to what I did by normalizing each layer's output variance, using input data
+    * Key learning might be that pre-training on image-net provides huge advantage vs. training from scratch
+        * Need more thinking what to do with this information
+        * Where is the knowledge coming from?
+            * Coming from the hard work of the labelers of Imagenet?
+            * Coming from the manually tuned learning rates of the Imagenet DNN?
+            * When using Imagenet pre-training, what learning rates are these guys using for fine-tuning?
+                * Using Imagenet's manually tuned learning rates?
+        * Is it any better than adding the same amount of domain-specific labelled data? -- Moot question, we don't have such data.
+        * For what data set size is Imagenet pre-training important and at what size does it become irrelevant?
+        * What happens if we try to train Imagenet with random weights vs with this guy's, etc. optimized init?
+        * Should re-read the old papers and track how did they do initializaiton and what tricks they did for ensuring convergence?
+            * Looks like Googlenet originally used extra training heads, just like the older Cifar paper, for providing direct feedback to earlier layers
+                * Such things tend to get forgotten
+        
