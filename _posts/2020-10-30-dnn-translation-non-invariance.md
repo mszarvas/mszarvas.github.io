@@ -1,7 +1,9 @@
 
 [Why do deep convolutional networks generalize so poorly to small image transformations?](https://arxiv.org/pdf/1805.12177.pdf)
 Thread:  Yet another failure mode of discriminative models
+
 [Dmitry's scripts](https://drive.google.com/open?id=1mhZSjWAhL7vLQIOhgiSrpiwJKYz7dXo7)
+
 Convolutional Neural Networks (CNNs) are commonly assumed to be invariant to small
 image transformations: either because of the convolutional architecture or because they
 were trained using data augmentation. Recently, several authors have shown that this is
@@ -18,6 +20,7 @@ transformations in neural networks while preserving high accuracy remains unsolv
 
 
 [An intriguing failing of convolutional neural networks and the CoordConv solution](https://arxiv.org/pdf/1807.03247.pdf)
+
 Few ideas have enjoyed as large an impact on deep learning as convolution. For any
 problem involving pixels or spatial representations, common intuition holds that
 convolutional neural networks may be appropriate. In this paper we show a striking
