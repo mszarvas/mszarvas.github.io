@@ -29,4 +29,8 @@ Antonio Polino, Razvan Pascanu, Dan Alistarh,
     * https://github.com/antspy/quantized_distillation
     * Two new compression methods, which jointly leverage weight quantization and distillation of larger networks, called “teachers,” into compressed “student” networks
     * Quantized shallow students can reach similar accuracy levels to state-of-the-artfull-precision teacher models, while providing up to order of magnitude compression, and inference speedup that is almost linear in the depth reduction
-    
+
+Benoit Jacob, other Google guys, CVPR 2018,
+[Quantization and Training of Neural Networks for Efficient Integer-Arithmetic-Only Inference](https://openaccess.thecvf.com/content_cvpr_2018/papers/Jacob_Quantization_and_Training_CVPR_2018_paper.pdf)
+    * Google's QAT paper
+
