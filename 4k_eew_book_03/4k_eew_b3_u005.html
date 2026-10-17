@@ -4840,6 +4840,64 @@ translationsButton.addEventListener('click', () => {
 });
 const highlightPalette = document.querySelector('.highlight-palette');
 const highlightButtons = [...highlightPalette.querySelectorAll('button')];
+// Prefer square TR/swatches when the other labels still fit. The CSS above is
+// the narrow-screen fallback; only the wide mode overrides its flex allocation.
+const controlsRow = document.querySelector('.dictionary-controls');
+const proportionalControls = [copyButton, playButton, autoHighlightButton];
+function sizeDictionaryControls() {
+  const height = translationsButton.getBoundingClientRect().height;
+  if (!height || highlightPalette.hidden) return;
+  const gap = parseFloat(getComputedStyle(controlsRow).columnGap) || 0;
+  const measurements = proportionalControls.map(button => {
+    const range = document.createRange(); range.selectNodeContents(button);
+    const textWidth = range.getBoundingClientRect().width;
+    const style = getComputedStyle(button);
+    const edges = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight) +
+      parseFloat(style.borderLeftWidth) + parseFloat(style.borderRightWidth);
+    return {button, textWidth, minimum:Math.max(height, textWidth + edges)};
+  });
+  const squareWidth = height * (highlightButtons.length + 1);
+  const available = controlsRow.getBoundingClientRect().width - gap * 4 - squareWidth;
+  const fits = available >= measurements.reduce((sum, item) => sum + item.minimum, 0);
+  controlsRow.dataset.controlsLayout = fits ? 'square' : 'fallback';
+  // Allocate outer widths, including padding/borders, in rendered-text ratio.
+  // Freeze undersized shares at their minima and redistribute the remainder.
+  if (fits) {
+    let pending = [...measurements], remaining = available;
+    while (pending.length) {
+      const weight = pending.reduce((sum, item) => sum + item.textWidth, 0);
+      const clamped = pending.filter(item => remaining * item.textWidth / weight < item.minimum);
+      if (!clamped.length) {
+        for (const item of pending) item.width = remaining * item.textWidth / weight;
+        break;
+      }
+      for (const item of clamped) { item.width = item.minimum; remaining -= item.minimum; }
+      pending = pending.filter(item => !clamped.includes(item));
+    }
+  }
+  for (const {button, minimum, width} of measurements) {
+    if (fits) {
+      button.style.flex = `0 0 ${width}px`;
+      button.style.minWidth = `${minimum}px`;
+    } else {
+      button.style.removeProperty('flex');
+      button.style.removeProperty('min-width');
+    }
+  }
+  if (fits) {
+    translationsButton.style.flex = `0 0 ${height}px`;
+    highlightPalette.style.flex = `0 0 ${height * highlightButtons.length}px`;
+  } else {
+    translationsButton.style.removeProperty('flex');
+    highlightPalette.style.removeProperty('flex');
+  }
+}
+const controlsResizeObserver = new ResizeObserver(sizeDictionaryControls);
+controlsResizeObserver.observe(controlsRow);
+const controlsTextObserver = new MutationObserver(sizeDictionaryControls);
+controlsTextObserver.observe(controlsRow, {subtree:true, childList:true, characterData:true});
+if (document.fonts) document.fonts.ready.then(sizeDictionaryControls);
+
 const speechSupported = 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
 let active = null;
 let playback = null;
@@ -4975,6 +5033,7 @@ copyButton.hidden = false;
 playButton.hidden = false;
 playButton.disabled = !speechSupported;
 highlightPalette.hidden = false;
+sizeDictionaryControls();
 autoHighlightButton.addEventListener('click', () => {
   autoHighlight = !autoHighlight;
   autoHighlightButton.setAttribute('aria-pressed', String(autoHighlight));
