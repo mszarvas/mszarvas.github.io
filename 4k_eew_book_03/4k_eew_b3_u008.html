@@ -80,6 +80,10 @@ body:has(.segment-choice:checked) .dictionary-placeholder { display:none; }
 .dictionary-side-tools .dictionary-filter { display:flex; align-items:center; justify-content:center; color:#8fa99a; }
 .dictionary-filter svg { width:16px; height:16px; flex-shrink:0; }
 .dictionary-side-tools .dictionary-swap { font-size:1.35rem; }
+.dictionary-side-tools .dictionary-highlight-link { display:grid; place-items:center; }
+.dictionary-highlight-link svg { width:24px; height:24px; }
+.dictionary-highlight-link .highlight-link-bar { fill:#f4e268; }
+.dictionary-highlight-link[aria-pressed="false"] .highlight-link-bar { fill:currentColor; }
 .translation-first .japanese { margin-bottom:12px; padding-right:36px; }
 .translation-first .english { margin-bottom:0; }
 .filter-detached-selection .dictionary-placeholder { display:none; }
@@ -96,7 +100,7 @@ body:has(.segment-choice:checked) .dictionary-placeholder { display:none; }
 
 </style><style id="vocabulary-dictionary-rules">
 
-</style><meta name="study-exporter" content="1.3.0"><style id="occurrence-dictionary-rules">body:has(#en-s1-o1:checked) #dictionary-entry-en-s1-o1 { display:grid; }
+</style><meta name="study-exporter" content="1.4.0"><style id="occurrence-dictionary-rules">body:has(#en-s1-o1:checked) #dictionary-entry-en-s1-o1 { display:grid; }
 body:has(#en-s1-o2:checked) #dictionary-entry-en-s1-o2 { display:grid; }
 body:has(#en-s1-o3:checked) #dictionary-entry-en-s1-o3 { display:grid; }
 body:has(#en-s1-o4:checked) #dictionary-entry-en-s1-o4 { display:grid; }
@@ -3142,7 +3146,19 @@ swapButton.className = 'dictionary-swap';
 swapButton.textContent = '⇅';
 swapButton.setAttribute('aria-label', 'Swap sentence order');
 swapButton.setAttribute('aria-pressed', 'false');
-sideTools.append(swapButton, filterButton, translationsButton);
+const highlightLinkButton = document.createElement('button');
+highlightLinkButton.type = 'button';
+highlightLinkButton.className = 'dictionary-highlight-link';
+highlightLinkButton.setAttribute('aria-label', 'Link highlights');
+highlightLinkButton.setAttribute('aria-pressed', 'true');
+// Central Chain: two highlighted rows joined by a chain, embedded for offline use.
+highlightLinkButton.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect class="highlight-link-bar" x="2" y="1" width="20" height="5" rx="1.5"/><rect class="highlight-link-bar" x="2" y="18" width="20" height="5" rx="1.5"/><g transform="translate(5 5) scale(.5833) rotate(-35 12 12)" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></g></svg>';
+sideTools.append(highlightLinkButton, swapButton, filterButton, translationsButton);
+let highlightLinkEnabled = true;
+highlightLinkButton.addEventListener('click', () => {
+  highlightLinkEnabled = !highlightLinkEnabled;
+  highlightLinkButton.setAttribute('aria-pressed', String(highlightLinkEnabled));
+});
 let sentenceFilterEnabled = false;
 let unfilteredScroll = null;
 let detachedDictionaryEntry = null;
@@ -3315,22 +3331,32 @@ function clearLinkedSelection() {
   for (const label of linkedCounterparts) label.classList.remove('linked-counterpart');
   linkedCounterparts = [];
 }
+function directCounterparts(segment) {
+  if (segment.matches('.vocabulary-segment') || ['candidate', 'unresolved'].includes(segment.dataset.alignmentStatus)) return [];
+  const card = segment.closest('.triplet');
+  if (!card) return [];
+  const targets = new Set((segment.dataset.alignedTo || '').split(/\s+/).filter(Boolean));
+  return [...card.querySelectorAll('.english .segment, .japanese .segment')].filter(label =>
+    label.lang !== segment.lang && targets.has(label.htmlFor) &&
+    !['candidate', 'unresolved'].includes(label.dataset.alignmentStatus));
+}
 function updateLinkedSelection(segment) {
   clearLinkedSelection();
-  if (segment.matches('.vocabulary-segment') || ['candidate', 'unresolved'].includes(segment.dataset.alignmentStatus)) return;
-  const card = segment.closest('.triplet');
-  const targets = new Set((segment.dataset.alignedTo || '').split(/\s+/).filter(Boolean));
-  for (const label of card.querySelectorAll('.english .segment, .japanese .segment')) {
-    if (label.lang === segment.lang || !targets.has(label.htmlFor) ||
-        ['candidate', 'unresolved'].includes(label.dataset.alignmentStatus)) continue;
+  for (const label of directCounterparts(segment)) {
     label.classList.add('linked-counterpart');
     linkedCounterparts.push(label);
+  }
+}
+function applyHighlightAction(segment, color) {
+  applyHighlight(segment, color);
+  if (highlightLinkEnabled) {
+    for (const counterpart of directCounterparts(segment)) applyHighlight(counterpart, color);
   }
 }
 function activate(segment, repeat = false) {
   if (!segment) return;
   if (autoHighlight) {
-    applyHighlight(segment, selectedHighlight);
+    applyHighlightAction(segment, selectedHighlight);
     saveHighlights();
   }
   if (active === segment) {
@@ -3425,7 +3451,7 @@ highlightPalette.addEventListener('click', event => {
   const button = event.target.closest('button[data-color]');
   if (!button) return;
   selectedHighlight = button.dataset.color;
-  if (active) applyHighlight(active, selectedHighlight);
+  if (active) applyHighlightAction(active, selectedHighlight);
   updateHighlightControl();
   saveHighlights();
 });
