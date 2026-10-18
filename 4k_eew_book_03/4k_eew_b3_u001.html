@@ -28,7 +28,7 @@ h1 { font-size:1.65rem; font-weight:650; margin:0 0 10px; }
 .vocabulary .term { color:#526359; }
 .dictionary-dock { display:contents; }
 .dictionary-panel { position:fixed; z-index:100; top:0; left:0; right:0; height:var(--dictionary-height); padding-top:env(safe-area-inset-top,0px); background:#203d30; color:white; box-shadow:0 3px 16px #203d301c; }
-.dictionary-inner { position:relative; height:100%; max-width:850px; margin:auto; padding:12px 28px; display:flex; flex-direction:column; }
+.dictionary-inner { position:relative; height:100%; max-width:850px; margin:auto; padding:12px 28px; display:grid; grid-template-columns:minmax(0,1fr) 32px; grid-template-rows:minmax(0,1fr) auto; column-gap:6px; }
 .dictionary-content { padding-right:100px; overflow-y:auto; overscroll-behavior:contain; flex:1; min-height:0; font-size:1rem; line-height:1.5; overflow-wrap:anywhere; }
 .dictionary-entry { display:none; }
 .dictionary-term { font-weight:650; }
@@ -51,12 +51,16 @@ body:has(.segment-choice:checked) .dictionary-placeholder { display:none; }
 @media print { .dictionary-panel,.library-nav,.segment-choice,.sentence-play { display:none; } main { max-width:none; padding:0; } body { background:white; } .triplet { break-inside:avoid; } .segment { border:none; } .english { padding-right:0; } }
 
 .dictionary-ipa,.dictionary-romaji { color:#c6dfce; }
-.dictionary-content { padding-right:0; }
+.dictionary-content { padding-right:0; grid-column:1; grid-row:1; }
 .dictionary-entry { grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:4px 20px; align-items:start; }
 .dictionary-entry > div { min-width:0; }
 .dictionary-entry [role="button"] { cursor:pointer; }
 .dictionary-entry [role="button"]:focus-visible { outline:2px solid #c6dfce; outline-offset:2px; border-radius:2px; }
-.dictionary-controls { position:static; flex-direction:row; gap:6px; flex-shrink:0; margin-top:8px; }
+.dictionary-controls { position:static; grid-column:1; grid-row:2; flex-direction:row; gap:6px; flex-shrink:0; min-width:0; margin-top:8px; }
+.dictionary-side-tools { grid-column:2; grid-row:1 / -1; display:flex; flex-direction:column; gap:6px; align-items:stretch; justify-content:flex-end; }
+.dictionary-side-tools button { width:32px; height:32px; flex:0 0 32px; padding:0; font:inherit; font-size:.75rem; line-height:1.2; color:#8fa99a; background:transparent; border:1px solid #5d7d6c; border-radius:5px; cursor:pointer; }
+.dictionary-side-tools button:focus-visible { outline:2px solid white; outline-offset:2px; }
+.dictionary-side-tools button[aria-pressed="true"] { color:#ffffff; }
 .dictionary-controls button { flex:1; min-width:0; min-height:32px; height:32px; padding:3px 10px; line-height:1.2; }
 .dictionary-controls .dictionary-copy { flex:0 0 auto; padding:3px 2px; white-space:nowrap; }
 .dictionary-controls .dictionary-play { flex:0 0 auto; padding:3px 2px; white-space:nowrap; color:#8fa99a; }
@@ -73,12 +77,9 @@ body:has(.segment-choice:checked) .dictionary-placeholder { display:none; }
 .highlight-palette [data-color="off"] { background:#ffffff; }
 .highlight-palette button[aria-pressed="true"] { box-shadow:inset 0 0 0 1.5px #163f2e; }
 .dictionary-controls .dictionary-auto-highlight[aria-pressed="true"] { color:#ffffff; }
-.dictionary-controls .dictionary-filter { flex:0 0 18px; padding:0; display:flex; align-items:center; justify-content:center; color:#8fa99a; }
+.dictionary-side-tools .dictionary-filter { display:flex; align-items:center; justify-content:center; color:#8fa99a; }
 .dictionary-filter svg { width:16px; height:16px; flex-shrink:0; }
-.dictionary-controls .dictionary-filter[aria-pressed="true"] { color:#ffffff; }
 .filter-detached-selection .dictionary-placeholder { display:none; }
-.dictionary-controls .dictionary-translations { flex:1 1 auto; padding:3px 1px; color:#8fa99a; }
-.dictionary-controls .dictionary-translations[aria-pressed="true"] { color:#ffffff; }
 /* Keep every box and border width intact: TR changes painting only. */
 .translations-hidden main .japanese,
 .translations-hidden main .japanese *,
@@ -89,7 +90,7 @@ body:has(.segment-choice:checked) .dictionary-placeholder { display:none; }
 
 </style><style id="vocabulary-dictionary-rules">
 
-</style><meta name="study-exporter" content="1.1.0"><style id="occurrence-dictionary-rules">body:has(#en-s1-o1:checked) #dictionary-entry-en-s1-o1 { display:grid; }
+</style><meta name="study-exporter" content="1.2.1"><style id="occurrence-dictionary-rules">body:has(#en-s1-o1:checked) #dictionary-entry-en-s1-o1 { display:grid; }
 body:has(#en-s1-o2:checked) #dictionary-entry-en-s1-o2 { display:grid; }
 body:has(#en-s1-o3:checked) #dictionary-entry-en-s1-o3 { display:grid; }
 body:has(#en-s1-o4:checked) #dictionary-entry-en-s1-o4 { display:grid; }
@@ -3226,7 +3227,11 @@ translationsButton.type = 'button';
 translationsButton.textContent = 'TR';
 translationsButton.setAttribute('aria-label', 'Translations');
 translationsButton.setAttribute('aria-pressed', 'true');
-autoHighlightButton.after(translationsButton);
+const sideTools = document.createElement('div');
+sideTools.className = 'dictionary-side-tools';
+sideTools.setAttribute('role', 'group');
+sideTools.setAttribute('aria-label', 'Dictionary side tools');
+document.querySelector('.dictionary-inner').append(sideTools);
 const filterButton = document.createElement('button');
 filterButton.type = 'button';
 filterButton.className = 'dictionary-filter';
@@ -3234,8 +3239,7 @@ filterButton.setAttribute('aria-label', 'Show only sentences with highlights');
 filterButton.setAttribute('aria-pressed', 'false');
 // Inline funnel: no font, library or network dependency in offline exports.
 filterButton.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 3h16a1 1 0 0 1 .8 1.6L14 13v6l-4 2v-8L3.2 4.6A1 1 0 0 1 4 3Z"/></svg>';
-autoHighlightButton.after(filterButton);
-document.querySelector('.highlight-palette').after(translationsButton);
+sideTools.append(filterButton, translationsButton);
 let sentenceFilterEnabled = false;
 let unfilteredScroll = null;
 let detachedDictionaryEntry = null;
@@ -3278,8 +3282,7 @@ translationsButton.addEventListener('click', () => {
 });
 const highlightPalette = document.querySelector('.highlight-palette');
 const highlightButtons = [...highlightPalette.querySelectorAll('button')];
-// Prefer square TR/swatches when the other labels still fit. The CSS above is
-// the narrow-screen fallback; only the wide mode overrides its flex allocation.
+// Side tools stay square; size the bottom row independently.
 const controlsRow = document.querySelector('.dictionary-controls');
 const proportionalControls = [copyButton, playButton, autoHighlightButton];
 function sizeDictionaryControls() {
@@ -3294,8 +3297,8 @@ function sizeDictionaryControls() {
       parseFloat(style.borderLeftWidth) + parseFloat(style.borderRightWidth);
     return {button, textWidth, minimum:Math.max(height, textWidth + edges)};
   });
-  const squareWidth = height * (highlightButtons.length + 2);
-  const available = controlsRow.getBoundingClientRect().width - gap * 5 - squareWidth;
+  const squareWidth = height * highlightButtons.length;
+  const available = controlsRow.getBoundingClientRect().width - gap * 3 - squareWidth;
   const fits = available >= measurements.reduce((sum, item) => sum + item.minimum, 0);
   controlsRow.dataset.controlsLayout = fits ? 'square' : 'fallback';
   // Allocate outer widths, including padding/borders, in rendered-text ratio.
@@ -3323,23 +3326,10 @@ function sizeDictionaryControls() {
     }
   }
   if (fits) {
-    filterButton.style.flex = `0 0 ${height}px`;
-    translationsButton.style.flex = `0 0 ${height}px`;
     highlightPalette.style.flex = `0 0 ${height * highlightButtons.length}px`;
   } else {
-    translationsButton.style.removeProperty('flex');
-    // Keep a square funnel whenever the intrinsic labels to its left, TR and
-    // the existing narrow palette still fit; otherwise shrink only the funnel.
-    const range = document.createRange(); range.selectNodeContents(translationsButton);
-    const style = getComputedStyle(translationsButton);
-    const trMinimum = range.getBoundingClientRect().width + parseFloat(style.paddingLeft) +
-      parseFloat(style.paddingRight) + parseFloat(style.borderLeftWidth) + parseFloat(style.borderRightWidth);
-    const leftWidth = measurements.reduce((sum, item) => sum + item.button.getBoundingClientRect().width, 0);
-    highlightPalette.style.removeProperty('flex');
-    const room = controlsRow.getBoundingClientRect().width - gap * 5 - leftWidth -
-      highlightPalette.getBoundingClientRect().width - trMinimum;
-    filterButton.style.flex = `0 0 ${Math.min(height, Math.max(18, room))}px`;
-    highlightPalette.style.removeProperty('flex');
+    // Let the palette use the remaining row width after the intrinsic labels.
+    highlightPalette.style.flex = '1 1 0';
   }
 }
 const controlsResizeObserver = new ResizeObserver(sizeDictionaryControls);
@@ -3496,7 +3486,7 @@ document.addEventListener('click', event => {
   if (segment) { activate(segment, true); copyTappedText(segment.textContent); }
   // Radio labels also forward a click to their hidden input. Panel controls
   // and dictionary playback must retain the word on which they operate.
-  else if (!event.target.closest('.segment-choice, .dictionary-controls, .dictionary-entry [role="button"]')) clearActiveWord();
+  else if (!event.target.closest('.segment-choice, .dictionary-controls, .dictionary-side-tools, .dictionary-entry [role="button"]')) clearActiveWord();
 }, true);
 document.addEventListener('change', event => {
   if (event.target.matches('.segment-choice')) activate(document.querySelector('label[for="' + event.target.id + '"]'));
