@@ -89,7 +89,7 @@ body:has(.segment-choice:checked) .dictionary-placeholder { display:none; }
 
 </style><style id="vocabulary-dictionary-rules">
 
-</style><meta name="study-exporter" content="1.0.0"><style id="occurrence-dictionary-rules">body:has(#en-s1-o1:checked) #dictionary-entry-en-s1-o1 { display:grid; }
+</style><meta name="study-exporter" content="1.1.0"><style id="occurrence-dictionary-rules">body:has(#en-s1-o1:checked) #dictionary-entry-en-s1-o1 { display:grid; }
 body:has(#en-s1-o2:checked) #dictionary-entry-en-s1-o2 { display:grid; }
 body:has(#en-s1-o3:checked) #dictionary-entry-en-s1-o3 { display:grid; }
 body:has(#en-s1-o4:checked) #dictionary-entry-en-s1-o4 { display:grid; }
@@ -3389,20 +3389,21 @@ document.addEventListener('click', event => {
   if (event.detail && wordGesture && wordGesture.dragged &&
       (wordGesture.down || performance.now() - wordGesture.ended < 700)) {
     event.preventDefault(); // Suppress only a post-drag click, never scrolling.
+    event.stopImmediatePropagation();
     return;
   }
   const segment = event.target.closest('.segment');
-  if (segment) activate(segment, true);
+  if (segment) { activate(segment, true); copyTappedText(segment.textContent); }
   // Radio labels also forward a click to their hidden input. Panel controls
   // and dictionary playback must retain the word on which they operate.
   else if (!event.target.closest('.segment-choice, .dictionary-controls, .dictionary-entry [role="button"]')) clearActiveWord();
-});
+}, true);
 document.addEventListener('change', event => {
   if (event.target.matches('.segment-choice')) activate(document.querySelector('label[for="' + event.target.id + '"]'));
 });
 document.addEventListener('keydown', event => {
   const segment = event.target.closest('.segment');
-  if (segment && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); activate(segment, true); }
+  if (segment && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); activate(segment, true); copyTappedText(segment.textContent); }
 });
 // Scrolling and leaving a word preserve selection; an actual outside click clears it.
 copyButton.hidden = false;
@@ -3486,41 +3487,58 @@ for (const button of document.querySelectorAll('.sentence-play')) {
   });
 }
 
-// Both cells of a dictionary row play its spelling, never its pronunciation text.
-// Panel playback is independent of the main-text autoplay toggle.
-if (speechSupported) for (const entry of document.querySelectorAll('.dictionary-entry')) {
+// Each dictionary field copies its own displayed word/phrase or pronunciation.
+// Playback still uses the row's spelling and is independent of Autoplay.
+for (const entry of document.querySelectorAll('.dictionary-entry')) {
   const fields = [...entry.children];
   fields.forEach((field, index) => {
     const spelling = fields[index < 2 ? 0 : 2];
     field.setAttribute('role', 'button');
     field.tabIndex = 0;
-    field.setAttribute('aria-label', 'Play ' + (spelling.lang === 'ja' ? 'Japanese: ' : 'English: ') + spelling.textContent);
-    const play = () => speak(spelling.textContent, spelling.lang);
-    field.addEventListener('click', play);
+    field.setAttribute('aria-label', 'Copy ' + field.textContent +
+      (speechSupported ? ' and play ' + spelling.textContent : ''));
+    const useField = () => {
+      copyTappedText(field.textContent);
+      if (speechSupported) speak(spelling.textContent, spelling.lang);
+    };
+    field.addEventListener('click', useField);
     field.addEventListener('keydown', event => {
-      if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); play(); }
+      if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); useField(); }
     });
   });
 }
 window.addEventListener('pagehide', stopSpeech);
+async function copyText(text) {
+  if (navigator.clipboard && window.isSecureContext) {
+    try { await navigator.clipboard.writeText(text); return; } catch { /* Try the offline fallback. */ }
+  }
+  const focus = document.activeElement;
+  const selection = window.getSelection();
+  const ranges = selection ? Array.from({length:selection.rangeCount}, (_, i) => selection.getRangeAt(i).cloneRange()) : [];
+  const area = document.createElement('textarea');
+  area.value = text; area.style.position = 'fixed'; area.style.opacity = '0';
+  document.body.appendChild(area);
+  try {
+    area.select();
+    if (!document.execCommand('copy')) throw new Error('Clipboard unavailable');
+  } finally {
+    area.remove();
+    if (focus && focus.isConnected) focus.focus({preventScroll:true});
+    if (selection) { selection.removeAllRanges(); for (const range of ranges) selection.addRange(range); }
+  }
+}
+function copyTappedText(text) {
+  if (!text) return;
+  // Clipboard denial must not interrupt selection, highlighting or playback.
+  copyText(text).catch(() => {});
+}
 copyButton.addEventListener('click', async () => {
   if (!active) return;
   const entry = document.getElementById(active.getAttribute('aria-describedby'));
   const definition = [...entry.children].map(line => line.textContent).join('\n');
-  const text = definition + '\n\n';
   try {
-    let copied = false;
-    if (navigator.clipboard && window.isSecureContext) {
-      try { await navigator.clipboard.writeText(text); copied = true; } catch { /* Local viewers may deny this API. */ }
-    }
-    if (!copied) {
-      const area = document.createElement('textarea'); area.value = text; area.style.position = 'fixed'; area.style.opacity = '0';
-      document.body.appendChild(area); area.select();
-      copied = document.execCommand('copy'); area.remove();
-      if (!copied) throw new Error('Clipboard unavailable');
-    }
+    await copyText(definition + '\n\n');
     copyButton.textContent = 'Copied';
   } catch { copyButton.textContent = 'Copy unavailable'; }
 });
 </script></body></html>
-
